@@ -209,12 +209,12 @@ namespace Marten.NodaTime.Testing.Acceptance
                 throw new NotImplementedException();
             }
 
-            public T FromJson<T>(TextReader reader)
+            public T FromJson<T>(Stream stream)
             {
                 throw new NotImplementedException();
             }
 
-            public object FromJson(Type type, TextReader reader)
+            public object FromJson(Type type, Stream stream)
             {
                 throw new NotImplementedException();
             }
@@ -224,7 +224,7 @@ namespace Marten.NodaTime.Testing.Acceptance
                 throw new NotImplementedException();
             }
 
-            public void ToJson(object document, TextWriter writer)
+            public void ToJson(object document, Stream stream)
             {
                 throw new NotImplementedException();
             }
