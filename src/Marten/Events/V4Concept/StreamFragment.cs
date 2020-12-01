@@ -35,9 +35,6 @@ namespace Marten.Events.V4Concept
         public TId Id { get;  }
         public ITenant Tenant { get; }
 
-        // Not sure this is going to get used at all
-        public AggregationAction Action { get; set; }
-
         public TDoc Aggregate { get; set; }
     }
 }
