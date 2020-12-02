@@ -1,7 +1,13 @@
+using System;
+using System.Linq;
+using System.Linq.Expressions;
 using LamarCodeGeneration;
+using Marten.Internal.CodeGeneration;
+using Marten.Linq.Parsing;
 using Marten.Schema;
 using Marten.Storage;
 using Marten.Storage.Metadata;
+using Marten.Util;
 
 namespace Marten.Events
 {
@@ -38,17 +44,43 @@ namespace Marten.Events
 
     // ENDSAMPLE
 
-    public abstract class EventTableColumn: TableColumn
+    public interface IEventTableColumn
     {
-        public EventTableColumn(string name, string type) : base(name, type)
-        {
-        }
-
-        public EventTableColumn(string name, string type, string directive) : base(name, type, directive)
-        {
-        }
-
-        public abstract void GenerateSelectorCode(GeneratedMethod method, EventGraph graph, int index);
+        public void GenerateSelectorCodeSync(GeneratedMethod method, EventGraph graph, int index);
+        public abstract void GenerateSelectorCodeAsync(GeneratedMethod method, EventGraph graph, int index);
         public abstract void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index);
+    }
+
+    public class EventTableColumn: TableColumn, IEventTableColumn
+    {
+        private readonly Expression<Func<IEvent, object>> _eventMemberExpression;
+
+        public EventTableColumn(string name, Expression<Func<IEvent, object>> eventMemberExpression) : base(name, "varchar")
+        {
+            _eventMemberExpression = eventMemberExpression;
+            var member = FindMembers.Determine(eventMemberExpression).Single();
+            Type = TypeMappings.GetPgType(member.GetMemberType(), EnumStorage.AsInteger);
+        }
+
+        public void GenerateSelectorCodeSync(GeneratedMethod method, EventGraph graph, int index)
+        {
+            method.IfDbReaderValueIsNotNull(index, () =>
+            {
+                method.AssignMemberFromReader(null, index, _eventMemberExpression);
+            });
+        }
+
+        public void GenerateSelectorCodeAsync(GeneratedMethod method, EventGraph graph, int index)
+        {
+            method.IfDbReaderValueIsNotNull(index, () =>
+            {
+                method.AssignMemberFromReader(null, index, _eventMemberExpression);
+            });
+        }
+
+        public void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
