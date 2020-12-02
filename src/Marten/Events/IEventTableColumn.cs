@@ -17,6 +17,8 @@ namespace Marten.Events
         public void GenerateSelectorCodeSync(GeneratedMethod method, EventGraph graph, int index);
         public abstract void GenerateSelectorCodeAsync(GeneratedMethod method, EventGraph graph, int index);
         public abstract void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index);
+
+        string Name { get; }
     }
 
     internal class EventJsonDataColumn: TableColumn, IEventTableColumn
@@ -76,12 +78,26 @@ namespace Marten.Events
 
         public void GenerateSelectorCodeSync(GeneratedMethod method, EventGraph graph, int index)
         {
-            throw new NotImplementedException();
+            if (graph.StreamIdentity == StreamIdentity.AsGuid)
+            {
+                method.AssignMemberFromReader<IEvent>(null, index, x => x.StreamId);
+            }
+            else
+            {
+                method.AssignMemberFromReader<IEvent>(null, index, x => x.StreamKey);
+            }
         }
 
         public void GenerateSelectorCodeAsync(GeneratedMethod method, EventGraph graph, int index)
         {
-            throw new NotImplementedException();
+            if (graph.StreamIdentity == StreamIdentity.AsGuid)
+            {
+                method.AssignMemberFromReaderAsync<IEvent>(null, index, x => x.StreamId);
+            }
+            else
+            {
+                method.AssignMemberFromReaderAsync<IEvent>(null, index, x => x.StreamKey);
+            }
         }
 
         public void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index)

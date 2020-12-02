@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Baseline;
 using Marten.Schema;
@@ -8,7 +9,7 @@ using Marten.Storage.Metadata;
 namespace Marten.Events
 {
     // SAMPLE: EventsTable
-    public class EventsTable: Table
+    internal class EventsTable: Table
     {
         public EventsTable(EventGraph events): base(new DbObjectName(events.DatabaseSchemaName, "mt_events"))
         {
@@ -44,6 +45,25 @@ namespace Marten.Events
             if (badColumns.Any())
                 throw new InvalidOperationException(
                     $"These columns are NOT implementing IEventTableColumn yet: {badColumns.Select(x => x.Name).Join(", ")}");
+        }
+
+        internal IList<IEventTableColumn> SelectColumns()
+        {
+            var columns = new List<IEventTableColumn>();
+            columns.AddRange(Columns.OfType<IEventTableColumn>());
+
+            var data = columns.OfType<EventJsonDataColumn>().Single();
+            var typeName = columns.OfType<EventTypeColumn>().Single();
+            var dotNetTypeName = columns.OfType<DotNetTypeColumn>().Single();
+
+            columns.Remove(data);
+            columns.Insert(0, data);
+            columns.Remove(typeName);
+            columns.Insert(1, typeName);
+            columns.Remove(dotNetTypeName);
+            columns.Insert(2, dotNetTypeName);
+
+            return columns;
         }
     }
 

@@ -37,12 +37,18 @@ namespace Marten.Storage.Metadata
 
         public void GenerateSelectorCodeSync(GeneratedMethod method, EventGraph graph, int index)
         {
-            throw new System.NotImplementedException();
+            method.IfDbReaderValueIsNotNull(index, () =>
+            {
+                method.AssignMemberFromReader<IEvent>(null, index, x => x.Version);
+            });
         }
 
         public void GenerateSelectorCodeAsync(GeneratedMethod method, EventGraph graph, int index)
         {
-            throw new System.NotImplementedException();
+            method.IfDbReaderValueIsNotNullAsync(index, () =>
+            {
+                method.AssignMemberFromReaderAsync<IEvent>(null, index, x => x.Version);
+            });
         }
 
         public void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index)

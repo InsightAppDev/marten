@@ -14,6 +14,7 @@ using Npgsql;
 
 namespace Marten.Events
 {
+    [Obsolete("This will be replaced in V4 with the codegen'd equivalent")]
     internal class EventSelector: IEventSelector
     {
         public EventGraph Events { get; }
