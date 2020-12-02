@@ -19,8 +19,6 @@ namespace Marten.Storage.Metadata
 
     public abstract class MetadataColumn : TableColumn
     {
-        // TODO -- there's a lot of duplication in the codegen across these columns
-
         public Type DotNetType { get; }
 
         protected MetadataColumn(string name, string type, Type dotNetType) : base(name, type)
@@ -59,11 +57,15 @@ namespace Marten.Storage.Metadata
         {
             if (Member == null) return;
 
-            sync.IfDbReaderValueIsNotNull(index,
-                () => { sync.AssignMemberFromReader(generatedType, index, mapping.DocumentType, Member.Name); });
+            sync.IfDbReaderValueIsNotNull(index, () =>
+            {
+                sync.AssignMemberFromReader(generatedType, index, mapping.DocumentType, Member.Name);
+            });
 
-            async.IfDbReaderValueIsNotNullAsync(index,
-                () => { async.AssignMemberFromReaderAsync(generatedType, index, mapping.DocumentType, Member.Name); });
+            async.IfDbReaderValueIsNotNullAsync(index, () =>
+            {
+                async.AssignMemberFromReaderAsync(generatedType, index, mapping.DocumentType, Member.Name);
+            });
         }
     }
 

@@ -27,7 +27,7 @@ namespace Marten.Internal.CodeGeneration
             frames.Code("StoreTracker({0}, document);", Use.Type<IMartenSession>());
         }
 
-        public static void Deserialize(this FramesCollection frames, DocumentMapping mapping, int index)
+        public static void DeserializeDocument(this FramesCollection frames, DocumentMapping mapping, int index)
         {
             var documentType = mapping.DocumentType;
             var document = new Variable(documentType, DocumentVariableName);
@@ -61,7 +61,7 @@ END
             frames.Code($"{{0}}.{nameof(IMartenSession.MarkAsDocumentLoaded)}(id, document);", Use.Type<IMartenSession>());
         }
 
-        public static void DeserializeAsync(this FramesCollection frames, DocumentMapping mapping, int index)
+        public static void DeserializeDocumentAsync(this FramesCollection frames, DocumentMapping mapping, int index)
         {
             var documentType = mapping.DocumentType;
             var document = new Variable(documentType, DocumentVariableName);

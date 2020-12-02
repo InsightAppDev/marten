@@ -1,10 +1,11 @@
 using LamarCodeGeneration;
+using Marten.Events;
 using Marten.Internal.CodeGeneration;
 using Marten.Schema;
 
 namespace Marten.Storage.Metadata
 {
-    internal class TenantIdColumn: MetadataColumn<string>, ISelectableColumn
+    internal class TenantIdColumn: MetadataColumn<string>, ISelectableColumn, IEventTableColumn
     {
         public static new readonly string Name = "tenant_id";
 
@@ -32,6 +33,21 @@ namespace Marten.Storage.Metadata
         public bool ShouldSelect(DocumentMapping mapping, StorageStyle storageStyle)
         {
             return Member != null;
+        }
+
+        public void GenerateSelectorCodeSync(GeneratedMethod method, EventGraph graph, int index)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void GenerateSelectorCodeAsync(GeneratedMethod method, EventGraph graph, int index)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }
