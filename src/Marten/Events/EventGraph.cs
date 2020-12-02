@@ -26,7 +26,10 @@ namespace Marten.Events
         private readonly Ref<ImHashMap<Type, IAggregator>> _aggregates =
             Ref.Of(ImHashMap<Type, IAggregator>.Empty);
 
+        // TODO -- absolutely replace this with ImHashMap
         private readonly ConcurrentCache<string, EventMapping> _byEventName = new ConcurrentCache<string, EventMapping>();
+
+        // TODO -- absolutely replace this with ImHashMap
         private readonly ConcurrentCache<Type, EventMapping> _events = new ConcurrentCache<Type, EventMapping>();
 
         private IAggregatorLookup _aggregatorLookup;

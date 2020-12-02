@@ -243,5 +243,24 @@ END
 
             method.Frames.Code("}}");
         }
+
+        public static void SetParameterFromMember<T>(this GeneratedMethod method, int index,
+            Expression<Func<T, object>> memberExpression)
+        {
+            var member = FindMembers.Determine(memberExpression).Single();
+            var memberType = member.GetMemberType();
+            var pgType = TypeMappings.ToDbType(memberType);
+
+            if (memberType == typeof(string))
+            {
+                method.Frames.Code($"parameters[{index}].Value = {{0}}.{member.Name} != null ? {{0}}.{member.Name} : {typeof(DBNull).FullNameInCode()}.Value;", Use.Type<T>());
+                method.Frames.Code($"parameters[{index}].NpgsqlDbType = {{0}};", pgType);
+            }
+            else
+            {
+                method.Frames.Code($"parameters[{index}].Value = {{0}}.{member.Name};", Use.Type<T>());
+                method.Frames.Code($"parameters[{index}].NpgsqlDbType = {{0}};", pgType);
+            }
+        }
     }
 }

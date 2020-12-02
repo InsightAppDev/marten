@@ -1,5 +1,6 @@
 using LamarCodeGeneration;
 using Marten.Events;
+using Marten.Internal.CodeGeneration;
 using Marten.Schema;
 
 namespace Marten.Storage.Metadata
@@ -23,7 +24,7 @@ namespace Marten.Storage.Metadata
 
         public void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index)
         {
-            throw new System.NotImplementedException();
+            method.SetParameterFromMember<IEvent>(index, x => x.DotNetTypeName);
         }
     }
 }

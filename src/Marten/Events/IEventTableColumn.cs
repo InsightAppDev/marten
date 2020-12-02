@@ -3,6 +3,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using LamarCodeGeneration;
+using LamarCodeGeneration.Frames;
+using Marten.Internal;
 using Marten.Internal.CodeGeneration;
 using Marten.Linq.Parsing;
 using Marten.Storage;
@@ -39,7 +41,8 @@ namespace Marten.Events
 
         public void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index)
         {
-            throw new NotImplementedException();
+            method.Frames.Code($"parameters[{index}].NpgsqlDbType = {{0}};", NpgsqlDbType.Jsonb);
+            method.Frames.Code($"parameters[{index}].Value = {{0}}.Serializer.ToJson({{1}});", Use.Type<IMartenSession>(), Use.Type<IEvent>());
         }
     }
 
@@ -61,7 +64,7 @@ namespace Marten.Events
 
         public void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index)
         {
-            throw new NotImplementedException();
+            method.SetParameterFromMember<IEvent>(index, x => x.EventTypeName);
         }
     }
 
@@ -102,7 +105,14 @@ namespace Marten.Events
 
         public void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index)
         {
-            throw new NotImplementedException();
+            if (graph.StreamIdentity == StreamIdentity.AsGuid)
+            {
+                method.SetParameterFromMember<EventStream>(index, x => x.Id);
+            }
+            else
+            {
+                method.SetParameterFromMember<EventStream>(index, x => x.Key);
+            }
         }
     }
 
@@ -143,7 +153,7 @@ namespace Marten.Events
             method.Frames.Code($"parameters[{index}].{nameof(NpgsqlParameter.NpgsqlDbType)} = {{0}};",
                 NpgsqlDbType);
             method.Frames.Code(
-                $"parameters[{index}].{nameof(NpgsqlParameter.Value)} = document.{_member.Name};");
+                $"parameters[{index}].{nameof(NpgsqlParameter.Value)} = {{0}}.{_member.Name};", Use.Type<IEvent>());
         }
     }
 

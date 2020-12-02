@@ -1,12 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Baseline;
 using Marten.Events.Projections;
-using Marten.Events.V4Concept;
-using Marten.Internal.Operations;
-using Marten.Internal.Sessions;
 
 namespace Marten.Events
 {
@@ -19,37 +13,41 @@ namespace Marten.Events
         long Sequence { get; set; }
 
         /// <summary>
-        /// The actual event data body
+        ///     The actual event data body
         /// </summary>
         object Data { get; }
 
         /// <summary>
-        /// If using Guid's for the stream identity, this will
-        /// refer to the Stream's Id, otherwise it will always be Guid.Empty
+        ///     If using Guid's for the stream identity, this will
+        ///     refer to the Stream's Id, otherwise it will always be Guid.Empty
         /// </summary>
         Guid StreamId { get; set; }
 
         /// <summary>
-        /// If using strings as the stream identifier, this will refer
-        /// to the containing Stream's Id
+        ///     If using strings as the stream identifier, this will refer
+        ///     to the containing Stream's Id
         /// </summary>
         string StreamKey { get; set; }
 
         /// <summary>
-        /// The UTC time that this event was originally captured
+        ///     The UTC time that this event was originally captured
         /// </summary>
         DateTimeOffset Timestamp { get; set; }
 
         /// <summary>
-        /// If using multi-tenancy by tenant id
+        ///     If using multi-tenancy by tenant id
         /// </summary>
         string TenantId { get; set; }
+
+        Type EventType { get; }
+
+        string EventTypeName { get; set; }
+
+        string DotNetTypeName { get; set; }
 
         [Obsolete("Eliminate in v4")]
         void Apply<TAggregate>(TAggregate state, IAggregator<TAggregate> aggregator)
             where TAggregate : class;
-
-        Type EventType { get; }
     }
 
     // ENDSAMPLE
@@ -61,42 +59,42 @@ namespace Marten.Events
             Data = data;
         }
 
+        /// <summary>
+        ///     The actual event data
+        /// </summary>
+        public T Data { get; set; }
+
         // SAMPLE: event_metadata
         /// <summary>
-        /// A reference to the stream that contains
-        /// this event
+        ///     A reference to the stream that contains
+        ///     this event
         /// </summary>
         public Guid StreamId { get; set; }
 
         /// <summary>
-        /// A reference to the stream if the stream
-        /// identier mode is AsString
+        ///     A reference to the stream if the stream
+        ///     identier mode is AsString
         /// </summary>
         public string StreamKey { get; set; }
 
         /// <summary>
-        /// An alternative Guid identifier to identify
-        /// events across databases
+        ///     An alternative Guid identifier to identify
+        ///     events across databases
         /// </summary>
         public Guid Id { get; set; }
 
         /// <summary>
-        /// An event's version position within its event stream
+        ///     An event's version position within its event stream
         /// </summary>
         public int Version { get; set; }
 
         /// <summary>
-        /// A global sequential number identifying the Event
+        ///     A global sequential number identifying the Event
         /// </summary>
         public long Sequence { get; set; }
 
         /// <summary>
-        /// The actual event data
-        /// </summary>
-        public T Data { get; set; }
-
-        /// <summary>
-        /// The UTC time that this event was originally captured
+        ///     The UTC time that this event was originally captured
         /// </summary>
         public DateTimeOffset Timestamp { get; set; }
 
@@ -111,17 +109,15 @@ namespace Marten.Events
         {
             var step = aggregator.AggregatorFor<T>();
             if (step is IAggregationWithMetadata<TAggregate, T>)
-            {
                 step.As<IAggregationWithMetadata<TAggregate, T>>()
                     .Apply(state, this);
-            }
             else
-            {
                 step?.Apply(state, Data);
-            }
         }
 
         public Type EventType => typeof(T);
+        public string EventTypeName { get; set; }
+        public string DotNetTypeName { get; set; }
 
 
         protected bool Equals(Event<T> other)
@@ -135,7 +131,7 @@ namespace Marten.Events
                 return false;
             if (ReferenceEquals(this, obj))
                 return true;
-            if (obj.GetType() != this.GetType())
+            if (obj.GetType() != GetType())
                 return false;
             return Equals((Event<T>)obj);
         }

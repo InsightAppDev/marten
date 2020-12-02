@@ -1,18 +1,53 @@
+using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Marten.Internal;
 using Marten.Internal.Operations;
+using Marten.Util;
 
 namespace Marten.Events.V4Concept
 {
     // This would be generated.
     public interface IEventOperationBuilder
     {
-        IStorageOperation AppendEvent(EventGraph events, IMartenSession session, EventStream stream, IEvent @event);
+        IStorageOperation AppendEvent(EventGraph events, IMartenSession session, EventStream stream, IEvent e);
         //IStorageOperation MarkStreamVersion(EventStream stream); // Hard-coded
         IStorageOperation InsertStream(EventStream stream); // <--- This can be hard coded upfront
         //ISqlFragment StreamFinder(EventStream stream); -- this can be hard-coded. Only 4 permutations
+    }
+
+    public class InsertStream: IStorageOperation
+    {
+        private readonly EventStream _stream;
+
+        public InsertStream(EventStream stream)
+        {
+            _stream = stream;
+        }
+
+        public void ConfigureCommand(CommandBuilder builder, IMartenSession session)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Type DocumentType => typeof(EventStream);
+        public void Postprocess(DbDataReader reader, IList<Exception> exceptions)
+        {
+            // TODO -- check that there's no existing stream?
+        }
+
+        public Task PostprocessAsync(DbDataReader reader, IList<Exception> exceptions, CancellationToken token)
+        {
+            // TODO -- check that there's no existing stream?
+            return Task.CompletedTask;
+        }
+
+        public OperationRole Role()
+        {
+            return OperationRole.Events;
+        }
     }
 
     // TODO -- also generate an ISelector<IEvent> and another for ISelector<StreamState>?
