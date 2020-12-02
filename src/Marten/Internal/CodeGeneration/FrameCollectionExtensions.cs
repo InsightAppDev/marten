@@ -1,11 +1,13 @@
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using Baseline;
 using LamarCodeGeneration;
 using LamarCodeGeneration.Frames;
 using LamarCodeGeneration.Model;
+using Marten.Linq.Parsing;
 using Marten.Schema;
 using Marten.Util;
 
@@ -182,6 +184,64 @@ END
             }
         }
 
+        public static void AssignMemberFromReader<T>(this GeneratedMethod method, GeneratedType generatedType, int index,
+            Expression<Func<T, object>> memberExpression)
+        {
+            var member = FindMembers.Determine(memberExpression).Single();
+            var variableName = member.Name.ToCamelCase();
+            method.Frames.Code($"var {variableName} = reader.GetFieldValue<{member.GetMemberType().FullNameInCode()}>({index});");
 
+            method.Frames.SetMemberValue(member, variableName, typeof(T), generatedType);
+        }
+
+        public static void AssignMemberFromReader(this GeneratedMethod method, GeneratedType generatedType, int index,
+            Type documentType, string memberName)
+        {
+            var member = documentType.GetMember(memberName).Single();
+            var variableName = member.Name.ToCamelCase();
+            method.Frames.Code($"var {variableName} = reader.GetFieldValue<{member.GetMemberType().FullNameInCode()}>({index});");
+
+            method.Frames.SetMemberValue(member, variableName, documentType, generatedType);
+        }
+
+        public static void AssignMemberFromReaderAsync<T>(this GeneratedMethod method, GeneratedType generatedType, int index,
+            Expression<Func<T, object>> memberExpression)
+        {
+            var member = FindMembers.Determine(memberExpression).Single();
+            var variableName = member.Name.ToCamelCase();
+            method.Frames.Code($"var {variableName} = await reader.GetFieldValueAsync<{member.GetMemberType().FullNameInCode()}>({index}, {{0}});", Use.Type<CancellationToken>());
+
+            method.Frames.SetMemberValue(member, variableName, typeof(T), generatedType);
+        }
+
+        public static void AssignMemberFromReaderAsync(this GeneratedMethod method, GeneratedType generatedType, int index,
+            Type documentType, string memberName)
+        {
+            var member = documentType.GetMember(memberName).Single();
+            var variableName = member.Name.ToCamelCase();
+            method.Frames.Code($"var {variableName} = await reader.GetFieldValueAsync<{member.GetMemberType().FullNameInCode()}>({index}, {{0}});", Use.Type<CancellationToken>());
+
+            method.Frames.SetMemberValue(member, variableName, documentType, generatedType);
+        }
+
+        public static void IfDbReaderValueIsNotNull(this GeneratedMethod method, int index, Action action)
+        {
+            method.Frames.Code($"if (!reader.IsDBNull({index}))");
+            method.Frames.Code("{{");
+
+            action();
+
+            method.Frames.Code("}}");
+        }
+
+        public static void IfDbReaderValueIsNotNullAsync(this GeneratedMethod method, int index, Action action)
+        {
+            method.Frames.CodeAsync($"if (!(await reader.IsDBNullAsync({index}, token)))");
+            method.Frames.Code("{{");
+
+            action();
+
+            method.Frames.Code("}}");
+        }
     }
 }

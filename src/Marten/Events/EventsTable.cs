@@ -1,3 +1,4 @@
+using LamarCodeGeneration;
 using Marten.Schema;
 using Marten.Storage;
 using Marten.Storage.Metadata;
@@ -36,4 +37,18 @@ namespace Marten.Events
     }
 
     // ENDSAMPLE
+
+    public abstract class EventTableColumn: TableColumn
+    {
+        public EventTableColumn(string name, string type) : base(name, type)
+        {
+        }
+
+        public EventTableColumn(string name, string type, string directive) : base(name, type, directive)
+        {
+        }
+
+        public abstract void GenerateSelectorCode(GeneratedMethod method, EventGraph graph, int index);
+        public abstract void GenerateAppendCode(GeneratedMethod method, EventGraph graph, int index);
+    }
 }
