@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Baseline;
 using Marten.Events.Projections;
+using Marten.Events.V4Concept.CodeGeneration;
 using Marten.Exceptions;
 using Marten.Schema;
 using Marten.Storage;
@@ -35,8 +36,12 @@ namespace Marten.Events
         private IAggregatorLookup _aggregatorLookup;
         private string _databaseSchemaName;
 
+        private readonly Lazy<IEventSelector> _selector;
+
         public EventGraph(StoreOptions options)
         {
+            _selector = new Lazy<IEventSelector>(() => EventOperationCodeGenerator.GenerateSelector(this, options.Serializer()));
+
             Options = options;
             _aggregatorLookup = new AggregatorLookup();
             _events.OnMissing = eventType =>
@@ -52,6 +57,8 @@ namespace Marten.Events
             InlineProjections = new ProjectionCollection(options);
             AsyncProjections = new ProjectionCollection(options);
         }
+
+        internal IEventSelector Selector => _selector.Value;
 
         public StreamIdentity StreamIdentity { get; set; } = StreamIdentity.AsGuid;
 

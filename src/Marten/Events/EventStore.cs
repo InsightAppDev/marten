@@ -28,14 +28,7 @@ namespace Marten.Events
             // TODO -- we can make much more of this lazy
             StreamIdentity = _store.Events.StreamIdentity;
 
-            if (StreamIdentity == StreamIdentity.AsGuid)
-            {
-                _selector = new EventSelector(_store.Events, _store.Serializer);
-            }
-            else
-            {
-                _selector = new StringIdentifiedEventSelector(_store.Events, _store.Serializer);
-            }
+            _selector = _store.Events.Selector;
         }
 
         private void ensureAsStringStorage()
@@ -392,7 +385,7 @@ namespace Marten.Events
         {
             _tenant.EnsureStorageExists(typeof(EventStream));
 
-            var handler = new SingleEventQueryHandler(id, _store.Events, _store.Serializer);
+            var handler = new SingleEventQueryHandler(id, _store.Events);
             return _session.ExecuteHandler(handler);
         }
 
@@ -400,7 +393,7 @@ namespace Marten.Events
         {
             _tenant.EnsureStorageExists(typeof(EventStream));
 
-            var handler = new SingleEventQueryHandler(id, _store.Events, _store.Serializer);
+            var handler = new SingleEventQueryHandler(id, _store.Events);
             return _session.ExecuteHandlerAsync(handler, token);
         }
 

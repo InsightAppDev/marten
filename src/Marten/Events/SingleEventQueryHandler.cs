@@ -13,12 +13,12 @@ namespace Marten.Events
     internal class SingleEventQueryHandler: IQueryHandler<IEvent>
     {
         private readonly Guid _id;
-        private readonly EventSelector _selector;
+        private readonly IEventSelector _selector;
 
-        public SingleEventQueryHandler(Guid id, EventGraph events, ISerializer serializer)
+        public SingleEventQueryHandler(Guid id, EventGraph events)
         {
             _id = id;
-            _selector = new EventSelector(events, serializer);
+            _selector = events.Selector;
         }
 
         public void ConfigureCommand(CommandBuilder sql, IMartenSession session)

@@ -39,7 +39,7 @@ namespace Marten.Storage.Metadata
         {
             method.IfDbReaderValueIsNotNull(index, () =>
             {
-                method.AssignMemberFromReader<IEvent>(null, index, x => x.Version);
+                method.AssignMemberFromReader<IEvent>(null, index, x => x.TenantId);
             });
         }
 
@@ -47,7 +47,7 @@ namespace Marten.Storage.Metadata
         {
             method.IfDbReaderValueIsNotNullAsync(index, () =>
             {
-                method.AssignMemberFromReaderAsync<IEvent>(null, index, x => x.Version);
+                method.AssignMemberFromReaderAsync<IEvent>(null, index, x => x.TenantId);
             });
         }
 

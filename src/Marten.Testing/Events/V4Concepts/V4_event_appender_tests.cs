@@ -20,7 +20,7 @@ namespace Marten.Testing.Events.V4Concepts
         [MemberData(nameof(Data))]
         public void generate_event_selector(TestCase @case)
         {
-            EventOperationCodeGenerator.GenerateSelector(@case.Store)
+            EventOperationCodeGenerator.GenerateSelector(@case.Store.Events, @case.Store.Serializer)
                 .ShouldNotBeNull();
         }
 

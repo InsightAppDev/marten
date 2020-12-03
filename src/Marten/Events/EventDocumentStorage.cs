@@ -24,7 +24,7 @@ namespace Marten.Events
         private readonly EventQueryMapping _mapping;
         private readonly IEventSelector _selector;
 
-        public EventDocumentStorage(EventGraph graph, EventQueryMapping mapping, ISerializer serializer)
+        public EventDocumentStorage(EventGraph graph, EventQueryMapping mapping)
         {
             _graph = graph;
             _mapping = mapping;
@@ -32,16 +32,8 @@ namespace Marten.Events
             FromObject = _mapping.TableName.QualifiedName;
             Fields = mapping;
 
-            if (graph.StreamIdentity == StreamIdentity.AsGuid)
-            {
-                IdType = typeof(Guid);
-                _selector = new EventSelector(graph, serializer);
-            }
-            else
-            {
-                IdType = typeof(string);
-                _selector = new StringIdentifiedEventSelector(graph, serializer);
-            }
+            _selector = graph.Selector;
+            IdType = graph.StreamIdentity == StreamIdentity.AsGuid ? typeof(Guid) : typeof(string);
         }
 
         public TenancyStyle TenancyStyle => _mapping.TenancyStyle;

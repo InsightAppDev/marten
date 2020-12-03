@@ -30,7 +30,7 @@ namespace Marten.Internal
 
             if (documentType == typeof(IEvent))
             {
-                var storage = new EventDocumentStorage(_options.Events, new EventQueryMapping(_options), _options.Serializer());
+                var storage = new EventDocumentStorage(_options.Events, new EventQueryMapping(_options));
                 var slot = new DocumentProvider<IEvent>
                 {
                     DirtyTracking = storage,

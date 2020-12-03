@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -22,7 +23,7 @@ namespace Marten.Events.V4Concept.CodeGeneration
     {
         private const string StreamStateSelectorTypeName = "GeneratedStreamStateQueryHandler";
 
-        public static IEventSelector GenerateSelector(DocumentStore store)
+        public static IEventSelector GenerateSelector(EventGraph events, ISerializer serializer)
         {
             var assembly = new GeneratedAssembly(new GenerationRules("Marten.Generated"));
             assembly.ReferenceAssembly(typeof(EventGraph).Assembly);
@@ -33,20 +34,22 @@ namespace Marten.Events.V4Concept.CodeGeneration
             var async = type.MethodFor("ApplyAsync");
 
             // The json data column has to go first
-            var table = new EventsTable(store.Events);
+            var table = new EventsTable(events);
             var columns = table.SelectColumns();
 
             for (var i = 3; i < columns.Count; i++)
             {
-                columns[i].GenerateSelectorCodeSync(sync, store.Events, i);
-                columns[i].GenerateSelectorCodeAsync(async, store.Events, i);
+                columns[i].GenerateSelectorCodeSync(sync, events, i);
+                columns[i].GenerateSelectorCodeAsync(async, events, i);
             }
 
             var compiler = new AssemblyGenerator();
             compiler.ReferenceAssembly(typeof(AggregationTypeBuilder).Assembly);
             compiler.Compile(assembly);
 
-            return (IEventSelector) Activator.CreateInstance(type.CompiledType, store.Events, store.Serializer);
+            Debug.WriteLine(type.SourceCode);
+
+            return (IEventSelector) Activator.CreateInstance(type.CompiledType, events, serializer);
         }
 
         public static IEventOperationBuilder GenerateOperationBuilder(EventGraph graph)

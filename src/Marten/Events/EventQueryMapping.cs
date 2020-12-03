@@ -12,9 +12,7 @@ namespace Marten.Events
     {
         public EventQueryMapping(StoreOptions storeOptions) : base(typeof(IEvent), storeOptions)
         {
-            Selector = storeOptions.Events.StreamIdentity == StreamIdentity.AsGuid
-                ? (IEventSelector)new EventSelector(storeOptions.Events, storeOptions.Serializer())
-                : new StringIdentifiedEventSelector(storeOptions.Events, storeOptions.Serializer());
+            Selector = storeOptions.Events.Selector;
 
             DatabaseSchemaName = storeOptions.Events.DatabaseSchemaName;
 

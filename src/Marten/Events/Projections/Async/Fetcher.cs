@@ -43,9 +43,7 @@ namespace Marten.Events.Projections.Async
 
             _streamIdentity = store.Events.StreamIdentity;
 
-            _selector = store.Events.StreamIdentity == StreamIdentity.AsGuid
-                ? (IEventSelector)new EventSelector(store.Events, store.Advanced.Serializer)
-                : new StringIdentifiedEventSelector(store.Events, store.Advanced.Serializer);
+            _selector = store.Events.Selector;
 
             EventTypeNames = eventTypes.Select(x => store.Events.EventMappingFor(x).Alias).ToArray();
 
