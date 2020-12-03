@@ -23,6 +23,7 @@ namespace Marten.Events.V4Concept.CodeGeneration
     {
         private const string StreamStateSelectorTypeName = "GeneratedStreamStateQueryHandler";
         private const string InsertStreamOperationName = "GeneratedInsertStream";
+        private const string UpdateStreamVersionOperationName = "GeneratedStreamVersionOperation";
 
         public static IEventSelector GenerateSelector(EventGraph events, ISerializer serializer)
         {
@@ -48,8 +49,6 @@ namespace Marten.Events.V4Concept.CodeGeneration
             compiler.ReferenceAssembly(typeof(AggregationTypeBuilder).Assembly);
             compiler.Compile(assembly);
 
-            Debug.WriteLine(type.SourceCode);
-
             return (IEventSelector) Activator.CreateInstance(type.CompiledType, events, serializer);
         }
 
@@ -70,7 +69,7 @@ namespace Marten.Events.V4Concept.CodeGeneration
 
             buildQueryForStreamMethod(graph, builderType);
 
-
+            buildUpdateStreamVersion(builderType, assembly, graph);
 
 
             var compiler = new AssemblyGenerator();
@@ -79,6 +78,45 @@ namespace Marten.Events.V4Concept.CodeGeneration
 
             return (IEventOperationBuilder) Activator.CreateInstance(builderType.CompiledType);
 
+        }
+
+        private static void buildUpdateStreamVersion(GeneratedType builderType, GeneratedAssembly assembly, EventGraph graph)
+        {
+            var operationType = assembly.AddType(UpdateStreamVersionOperationName, typeof(UpdateStreamVersion));
+            operationType.AllInjectedFields.Add(new InjectedField(typeof(EventStream)));
+
+            var sql = $"update {graph.DatabaseSchemaName}.mt_streams set version = ? where id = ? and version = ?";
+            if (graph.TenancyStyle == TenancyStyle.Conjoined)
+            {
+                sql += $" and {TenantIdColumn.Name} = ?";
+            }
+
+            var configureCommand = operationType.MethodFor("ConfigureCommand");
+
+            configureCommand.Frames.Code($"var parameters = {{0}}.{nameof(CommandBuilder.AppendWithParameters)}(\"{sql}\");",
+                Use.Type<CommandBuilder>());
+
+            configureCommand.SetParameterFromMember<EventStream>(0, x => x.Version);
+
+            if (graph.StreamIdentity == StreamIdentity.AsGuid)
+            {
+                configureCommand.SetParameterFromMember<EventStream>(1, x => x.Id);
+            }
+            else
+            {
+                configureCommand.SetParameterFromMember<EventStream>(1, x => x.Key);
+            }
+
+            configureCommand.SetParameterFromMember<EventStream>(2, x => x.ExpectedVersionOnServer);
+
+            if (graph.TenancyStyle == TenancyStyle.Conjoined)
+            {
+                new TenantIdColumn().As<IStreamTableColumn>().GenerateAppendCode(configureCommand, 3);
+            }
+
+            builderType.MethodFor(nameof(IEventOperationBuilder.UpdateStreamVersion))
+                .Frames.Code($"return new Marten.Generated.{UpdateStreamVersionOperationName}({{0}});",
+                    Use.Type<EventStream>());
         }
 
         private static void buildQueryForStreamMethod(EventGraph graph, GeneratedType builderType)

@@ -76,7 +76,7 @@ namespace Marten.Events
         public object Identifier => (object)Key ?? Id;
 
         public IEnumerable<IEvent> Events => _events;
-        internal int ExpectedVersionOnServer { get; set; }
+        public int ExpectedVersionOnServer { get; set; }
 
         // TODO -- have this set in the EventStream constructor
         public int Version { get; set; }

@@ -4,14 +4,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using LamarCodeGeneration;
-using LamarCodeGeneration.Frames;
 using Marten.Internal.CodeGeneration;
 using Marten.Linq.Parsing;
 using Marten.Schema;
 using Marten.Storage;
 using Marten.Storage.Metadata;
 using Marten.Util;
-using Npgsql;
 using NpgsqlTypes;
 
 namespace Marten.Events

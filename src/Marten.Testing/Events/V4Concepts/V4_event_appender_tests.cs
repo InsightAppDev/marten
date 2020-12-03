@@ -10,6 +10,7 @@ using Marten.Internal.Sessions;
 using Marten.Storage;
 using Marten.Testing.Harness;
 using Xunit;
+using Shouldly;
 
 namespace Marten.Testing.Events.V4Concepts
 {
@@ -81,6 +82,30 @@ namespace Marten.Testing.Events.V4Concepts
             await session.SaveChangesAsync();
         }
 
+        [Theory]
+        [MemberData(nameof(Data))]
+        public async Task can_update_the_version_of_an_existing_stream_happy_path(TestCase @case)
+        {
+            @case.Store.Advanced.Clean.CompletelyRemoveAll();
+            var stream = @case.StartNewStream();
+
+            stream.ExpectedVersionOnServer = 4;
+            stream.Version = 10;
+
+            var builder = EventOperationCodeGenerator.GenerateOperationBuilder(@case.Store.Events);
+            var op = builder.UpdateStreamVersion(stream);
+
+            using var session = @case.Store.LightweightSession();
+            session.QueueOperation(op);
+
+            await session.SaveChangesAsync();
+
+            var handler = builder.QueryForStream(stream);
+            var state = session.As<QuerySession>().ExecuteHandler(handler);
+
+            state.Version.ShouldBe(10);
+        }
+
         public static IEnumerable<object[]> Data()
         {
             return cases().Select(x => new object[] {x});
@@ -126,7 +151,7 @@ namespace Marten.Testing.Events.V4Concepts
                 TenantId = "KC";
             }
 
-            public void StartNewStream()
+            public EventStream StartNewStream()
             {
                 var events = new object[] {new AEvent(), new BEvent(), new CEvent(), new DEvent()};
                 using var session = Store.Events.TenancyStyle == TenancyStyle.Conjoined
@@ -137,11 +162,15 @@ namespace Marten.Testing.Events.V4Concepts
                 {
                     session.Events.StartStream(StreamId, events);
                     session.SaveChanges();
+
+                    return new EventStream(StreamId, true){Version = 4, TenantId = TenantId};
                 }
                 else
                 {
                     session.Events.StartStream(StreamId.ToString(), events);
                     session.SaveChanges();
+
+                    return new EventStream(StreamId.ToString(), true){Version = 4, TenantId = TenantId};
                 }
             }
 
