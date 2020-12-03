@@ -32,6 +32,8 @@ namespace Marten.Events
 
         public Type AggregateType { get; set; }
 
+        public string TenantId { get; set; }
+
         private readonly IList<IEvent> _events = new List<IEvent>();
 
         public EventStream(Guid stream, IEvent[] events, bool isNew)

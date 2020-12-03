@@ -33,6 +33,8 @@ namespace Marten.Internal.Sessions
         public ITenant Tenant { get; }
         public StoreOptions Options { get; }
 
+
+
         public void MarkAsAddedForStorage(object id, object document)
         {
             foreach (var listener in Listeners)

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Marten.Internal;
 using Marten.Internal.Operations;
+using Marten.Linq.QueryHandlers;
 using Marten.Util;
 
 namespace Marten.Events.V4Concept
@@ -15,7 +16,7 @@ namespace Marten.Events.V4Concept
         IStorageOperation AppendEvent(EventGraph events, IMartenSession session, EventStream stream, IEvent e);
         //IStorageOperation MarkStreamVersion(EventStream stream); // Hard-coded
         IStorageOperation InsertStream(EventStream stream); // <--- This can be hard coded upfront
-        //ISqlFragment StreamFinder(EventStream stream); -- this can be hard-coded. Only 4 permutations
+        IQueryHandler<StreamState> QueryForStream(EventStream stream);
     }
 
     public class InsertStream: IStorageOperation

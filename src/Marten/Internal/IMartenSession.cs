@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Marten.Events;
 using Marten.Internal.DirtyTracking;
 using Marten.Internal.Storage;
 using Marten.Services;
