@@ -125,7 +125,7 @@ namespace Marten.Events
         {
             _eventMemberExpression = eventMemberExpression;
             _member = FindMembers.Determine(eventMemberExpression).Single();
-            var memberType = FindMembers.Determine(eventMemberExpression).Single().GetMemberType();
+            var memberType = _member.GetMemberType();
             Type = TypeMappings.GetPgType(memberType, EnumStorage.AsInteger);
             NpgsqlDbType = TypeMappings.ToDbType(memberType);
         }

@@ -22,6 +22,7 @@ namespace Marten.Events.V4Concept.CodeGeneration
     internal static class EventOperationCodeGenerator
     {
         private const string StreamStateSelectorTypeName = "GeneratedStreamStateQueryHandler";
+        private const string InsertStreamOperationName = "GeneratedInsertStream";
 
         public static IEventSelector GenerateSelector(EventGraph events, ISerializer serializer)
         {
@@ -63,11 +64,13 @@ namespace Marten.Events.V4Concept.CodeGeneration
             builderType.MethodFor(nameof(IEventOperationBuilder.AppendEvent))
                 .Frames.Code($"return new Marten.Generated.AppendEventOperation(stream, e);");
 
-            buildInsertStreamMethod(builderType);
+            buildInsertStream(builderType, assembly, graph);
 
             buildStreamQueryHandlerType(graph, assembly);
 
             buildQueryForStreamMethod(graph, builderType);
+
+
 
 
             var compiler = new AssemblyGenerator();
@@ -200,10 +203,31 @@ namespace Marten.Events.V4Concept.CodeGeneration
             }
         }
 
-        private static void buildInsertStreamMethod(GeneratedType builderType)
+        private static void buildInsertStream(GeneratedType builderType, GeneratedAssembly generatedAssembly,
+            EventGraph graph)
         {
+            var operationType = generatedAssembly.AddType(InsertStreamOperationName, typeof(InsertStreamBase));
+            operationType.AllInjectedFields.Add(new InjectedField(typeof(EventStream)));
+
+            var columns = new StreamsTable(graph)
+                .Columns
+                .OfType<IStreamTableColumn>()
+                .Where(x => x.Writes)
+                .ToArray();
+
+            var sql = $"insert into {graph.DatabaseSchemaName}.mt_streams ({columns.Select(x => x.Name).Join(", ")}) values ({columns.Select(x => "?").Join(", ")})";
+            var configureCommand = operationType.MethodFor("ConfigureCommand");
+
+            configureCommand.Frames.Code($"var parameters = {{0}}.{nameof(CommandBuilder.AppendWithParameters)}(\"{sql}\");",
+                Use.Type<CommandBuilder>());
+
+            for (var i = 0; i < columns.Length; i++)
+            {
+                columns[i].GenerateAppendCode(configureCommand, i);
+            }
+
             builderType.MethodFor(nameof(IEventOperationBuilder.InsertStream))
-                .Frames.Code($"return new {typeof(InsertStream).FullNameInCode()}(stream);");
+                .Frames.Code($"return new Marten.Generated.{InsertStreamOperationName}(stream);");
         }
     }
 

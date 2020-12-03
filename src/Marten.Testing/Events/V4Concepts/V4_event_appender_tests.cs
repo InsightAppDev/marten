@@ -13,6 +13,7 @@ using Xunit;
 
 namespace Marten.Testing.Events.V4Concepts
 {
+
     [Collection("v4events")]
     public class V4_event_appender_tests
     {
@@ -60,6 +61,24 @@ namespace Marten.Testing.Events.V4Concepts
 
             var state = query.As<QuerySession>().ExecuteHandler(handler);
             state.ShouldNotBeNull();
+        }
+
+        [Theory]
+        [MemberData(nameof(Data))]
+        public async Task can_insert_a_new_stream(TestCase @case)
+        {
+            // This is just forcing the store to start the event storage
+            @case.Store.Advanced.Clean.CompletelyRemoveAll();
+            @case.StartNewStream();
+
+            var stream = @case.CreateNewStream();
+            var builder = EventOperationCodeGenerator.GenerateOperationBuilder(@case.Store.Events);
+            var op = builder.InsertStream(stream);
+
+            using var session = @case.Store.LightweightSession();
+            session.QueueOperation(op);
+
+            await session.SaveChangesAsync();
         }
 
         public static IEnumerable<object[]> Data()
@@ -124,6 +143,17 @@ namespace Marten.Testing.Events.V4Concepts
                     session.Events.StartStream(StreamId.ToString(), events);
                     session.SaveChanges();
                 }
+            }
+
+            public EventStream CreateNewStream()
+            {
+                var events = new IEvent[] {new Event<AEvent>(new AEvent())};
+                var stream = Store.Events.StreamIdentity == StreamIdentity.AsGuid ? new EventStream(Guid.NewGuid(), events, true) : new EventStream(Guid.NewGuid().ToString(), events, true);
+
+                stream.TenantId = TenantId;
+                stream.Version = 1;
+
+                return stream;
             }
 
             public string TenantId { get; set; }

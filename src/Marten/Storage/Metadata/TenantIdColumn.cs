@@ -5,7 +5,7 @@ using Marten.Schema;
 
 namespace Marten.Storage.Metadata
 {
-    internal class TenantIdColumn: MetadataColumn<string>, ISelectableColumn, IEventTableColumn
+    internal class TenantIdColumn: MetadataColumn<string>, ISelectableColumn, IEventTableColumn, IStreamTableColumn
     {
         public static new readonly string Name = "tenant_id";
 
@@ -55,5 +55,24 @@ namespace Marten.Storage.Metadata
         {
             method.SetParameterFromMember<IEvent>(index, x => x.TenantId);
         }
+
+        void IStreamTableColumn.GenerateAppendCode(GeneratedMethod method, int index)
+        {
+            method.SetParameterFromMember<EventStream>(index, x => x.TenantId);
+        }
+
+        void IStreamTableColumn.GenerateSelectorCodeAsync(GeneratedMethod method, int index)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        void IStreamTableColumn.GenerateSelectorCodeSync(GeneratedMethod method, int index)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        bool IStreamTableColumn.Reads => true;
+
+        bool IStreamTableColumn.Writes => true;
     }
 }

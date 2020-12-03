@@ -253,7 +253,7 @@ END
 
             if (memberType == typeof(string))
             {
-                method.Frames.Code($"parameters[{index}].Value = {{0}}.{member.Name} != null ? {{0}}.{member.Name} : {typeof(DBNull).FullNameInCode()}.Value;", Use.Type<T>());
+                method.Frames.Code($"parameters[{index}].Value = {{0}}.{member.Name} != null ? (object){{0}}.{member.Name} : {typeof(DBNull).FullNameInCode()}.Value;", Use.Type<T>());
                 method.Frames.Code($"parameters[{index}].NpgsqlDbType = {{0}};", pgType);
             }
             else

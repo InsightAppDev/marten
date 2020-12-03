@@ -14,24 +14,13 @@ namespace Marten.Events.V4Concept
     public interface IEventOperationBuilder
     {
         IStorageOperation AppendEvent(EventGraph events, IMartenSession session, EventStream stream, IEvent e);
-        //IStorageOperation MarkStreamVersion(EventStream stream); // Hard-coded
-        IStorageOperation InsertStream(EventStream stream); // <--- This can be hard coded upfront
+        IStorageOperation InsertStream(EventStream stream);
         IQueryHandler<StreamState> QueryForStream(EventStream stream);
     }
 
-    public class InsertStream: IStorageOperation
+    public abstract class InsertStreamBase : IStorageOperation
     {
-        private readonly EventStream _stream;
-
-        public InsertStream(EventStream stream)
-        {
-            _stream = stream;
-        }
-
-        public void ConfigureCommand(CommandBuilder builder, IMartenSession session)
-        {
-            throw new NotImplementedException();
-        }
+        public abstract void ConfigureCommand(CommandBuilder builder, IMartenSession session);
 
         public Type DocumentType => typeof(EventStream);
         public void Postprocess(DbDataReader reader, IList<Exception> exceptions)
@@ -51,11 +40,8 @@ namespace Marten.Events.V4Concept
         }
     }
 
-    // TODO -- also generate an ISelector<IEvent> and another for ISelector<StreamState>?
-    // Nah, hard code the selector for stream state upfront
 
 
-    // might need two flavors for stream guid vs string identity
     public interface IEventAppender
     {
         IEnumerable<IStorageOperation> BuildAppendOperations(IMartenSession session, IReadOnlyList<EventStream> streams);

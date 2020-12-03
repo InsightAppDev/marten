@@ -40,11 +40,6 @@ namespace Marten.Events
             }
 
             Constraints.Add("CONSTRAINT pk_mt_events_id_unique UNIQUE(id)");
-
-            var badColumns = Columns.Where(x => !(x is IEventTableColumn)).ToArray();
-            if (badColumns.Any())
-                throw new InvalidOperationException(
-                    $"These columns are NOT implementing IEventTableColumn yet: {badColumns.Select(x => x.Name).Join(", ")}");
         }
 
         internal IList<IEventTableColumn> SelectColumns()

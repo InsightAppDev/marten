@@ -32,7 +32,13 @@ namespace Marten.Events
 
         public Type AggregateType { get; set; }
 
+        // TODO -- this actually has to be set!!!
+
+        public string AggregateTypeName { get; set; }
+
         public string TenantId { get; set; }
+
+
 
         private readonly IList<IEvent> _events = new List<IEvent>();
 
@@ -71,6 +77,13 @@ namespace Marten.Events
 
         public IEnumerable<IEvent> Events => _events;
         internal int ExpectedVersionOnServer { get; set; }
+
+        // TODO -- have this set in the EventStream constructor
+        public int Version { get; set; }
+
+        public DateTime? Timestamp { get; set; }
+
+        public DateTime? Created { get; set; }
 
         /// <summary>
         /// Strictly for testing
