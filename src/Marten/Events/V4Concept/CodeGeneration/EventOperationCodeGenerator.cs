@@ -83,7 +83,6 @@ namespace Marten.Events.V4Concept.CodeGeneration
         private static void buildUpdateStreamVersion(GeneratedType builderType, GeneratedAssembly assembly, EventGraph graph)
         {
             var operationType = assembly.AddType(UpdateStreamVersionOperationName, typeof(UpdateStreamVersion));
-            operationType.AllInjectedFields.Add(new InjectedField(typeof(EventStream)));
 
             var sql = $"update {graph.DatabaseSchemaName}.mt_streams set version = ? where id = ? and version = ?";
             if (graph.TenancyStyle == TenancyStyle.Conjoined)
@@ -92,6 +91,7 @@ namespace Marten.Events.V4Concept.CodeGeneration
             }
 
             var configureCommand = operationType.MethodFor("ConfigureCommand");
+            configureCommand.DerivedVariables.Add(new Variable(typeof(EventStream), nameof(UpdateStreamVersion.Stream)));
 
             configureCommand.Frames.Code($"var parameters = {{0}}.{nameof(CommandBuilder.AppendWithParameters)}(\"{sql}\");",
                 Use.Type<CommandBuilder>());

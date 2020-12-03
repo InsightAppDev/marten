@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Baseline;
 using Marten.Events;
 using Marten.Events.V4Concept.CodeGeneration;
+using Marten.Exceptions;
 using Marten.Internal.Sessions;
 using Marten.Storage;
 using Marten.Testing.Harness;
@@ -104,6 +105,25 @@ namespace Marten.Testing.Events.V4Concepts
             var state = session.As<QuerySession>().ExecuteHandler(handler);
 
             state.Version.ShouldBe(10);
+        }
+
+        [Theory]
+        [MemberData(nameof(Data))]
+        public async Task can_update_the_version_of_an_existing_stream_sad_path(TestCase @case)
+        {
+            @case.Store.Advanced.Clean.CompletelyRemoveAll();
+            var stream = @case.StartNewStream();
+
+            stream.ExpectedVersionOnServer = 3; // it's actually 4, so this should fail
+            stream.Version = 10;
+
+            var builder = EventOperationCodeGenerator.GenerateOperationBuilder(@case.Store.Events);
+            var op = builder.UpdateStreamVersion(stream);
+
+            using var session = @case.Store.LightweightSession();
+            session.QueueOperation(op);
+
+            await Should.ThrowAsync<EventStreamUnexpectedMaxEventIdException>(() => session.SaveChangesAsync());
         }
 
         public static IEnumerable<object[]> Data()
