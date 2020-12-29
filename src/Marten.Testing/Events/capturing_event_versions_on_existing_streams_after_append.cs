@@ -14,6 +14,10 @@ namespace Marten.Testing.Events
     {
         public class RecordingSessionLogger: IMartenSessionLogger
         {
+            public void LogBeforeExecute(NpgsqlCommand command)
+            {
+            }
+
             public void LogSuccess(NpgsqlCommand command)
             {
             }

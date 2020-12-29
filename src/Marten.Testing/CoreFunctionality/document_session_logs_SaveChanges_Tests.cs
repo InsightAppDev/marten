@@ -49,9 +49,12 @@ namespace Marten.Testing.CoreFunctionality
     {
         public readonly IList<IChangeSet> Commits = new List<IChangeSet>();
 
+        public void LogBeforeExecute(NpgsqlCommand command)
+        {
+        }
+
         public void LogSuccess(NpgsqlCommand command)
         {
-
         }
 
         public void LogFailure(NpgsqlCommand command, Exception ex)

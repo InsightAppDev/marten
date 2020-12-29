@@ -31,6 +31,12 @@ namespace Marten
     public interface IMartenSessionLogger
     {
         /// <summary>
+        /// Log before a command executed
+        /// </summary>
+        /// <param name="command"></param>
+        void LogBeforeExecute(NpgsqlCommand command);
+
+        /// <summary>
         /// Log a command that executed successfully
         /// </summary>
         /// <param name="command"></param>
@@ -67,6 +73,12 @@ namespace Marten
             Console.WriteLine("Executing DDL change:");
             Console.WriteLine(sql);
             Console.WriteLine();
+        }
+
+        public void LogBeforeExecute(NpgsqlCommand command)
+        {
+            Console.WriteLine("Before command executed");
+            Console.WriteLine(command.CommandText);
         }
 
         public void LogSuccess(NpgsqlCommand command)

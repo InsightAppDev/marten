@@ -223,6 +223,7 @@ namespace Marten.Services
 
             try
             {
+                Logger.LogBeforeExecute(cmd);
                 var returnValue = _retryPolicy.Execute(cmd.ExecuteNonQuery);
                 Logger.LogSuccess(cmd);
 
@@ -245,6 +246,7 @@ namespace Marten.Services
 
             try
             {
+                Logger.LogBeforeExecute(command);
                 var returnValue = _retryPolicy.Execute<DbDataReader>(command.ExecuteReader);
                 Logger.LogSuccess(command);
                 return returnValue;
@@ -266,6 +268,7 @@ namespace Marten.Services
 
             try
             {
+                Logger.LogBeforeExecute(command);
                 var reader = await _retryPolicy.ExecuteAsync(() => command.ExecuteReaderAsync(token), token);
                 Logger.LogSuccess(command);
 
@@ -289,6 +292,7 @@ namespace Marten.Services
 
             try
             {
+                Logger.LogBeforeExecute(command);
                 var returnValue = await _retryPolicy.ExecuteAsync(() => command.ExecuteNonQueryAsync(token), token);
                 Logger.LogSuccess(command);
 

@@ -19,6 +19,10 @@ namespace Marten
             Debug.WriteLine("");
         }
 
+        public void LogBeforeExecute(NpgsqlCommand command)
+        {
+        }
+
         public void LogSuccess(NpgsqlCommand command)
         {
         }

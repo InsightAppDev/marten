@@ -9,6 +9,10 @@ namespace Marten.Testing.Examples
     {
         public readonly IList<NpgsqlCommand> Commands = new List<NpgsqlCommand>();
 
+        public void LogBeforeExecute(NpgsqlCommand command)
+        {
+        }
+
         public void LogSuccess(NpgsqlCommand command)
         {
             Commands.Add(command);

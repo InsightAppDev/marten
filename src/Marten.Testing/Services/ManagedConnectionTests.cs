@@ -141,6 +141,10 @@ namespace Marten.Testing.Services
             throw new NotImplementedException();
         }
 
+        public void LogBeforeExecute(NpgsqlCommand command)
+        {
+        }
+
         public void LogSuccess(NpgsqlCommand command)
         {
             LastCommand = command;

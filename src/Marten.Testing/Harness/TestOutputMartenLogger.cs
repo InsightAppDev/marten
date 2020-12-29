@@ -28,6 +28,12 @@ namespace Marten.Testing.Harness
             _output.WriteLine(String.Empty);
         }
 
+        public void LogBeforeExecute(NpgsqlCommand command)
+        {
+            _output.WriteLine("Before command executed");
+            _output.WriteLine(command.CommandText);
+        }
+
         public void LogSuccess(NpgsqlCommand command)
         {
             _output.WriteLine(command.CommandText);
